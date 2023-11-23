@@ -470,11 +470,11 @@ used to restore window configuration after file content changed.")
     (define-key map (kbd "<tab>")     #'color-rg-jump-next-keyword)
     (define-key map (kbd "<backtab>") #'color-rg-jump-prev-keyword)
 
-    (define-key map (kbd "j") #'color-rg-jump-next-keyword)
-    (define-key map (kbd "k") #'color-rg-jump-prev-keyword)
+    (define-key map (kbd "n") #'color-rg-jump-next-keyword)
+    (define-key map (kbd "p") #'color-rg-jump-prev-keyword)
     (define-key map (kbd "h") #'color-rg-jump-next-file)
     (define-key map (kbd "l") #'color-rg-jump-prev-file)
-    (define-key map (kbd "i") #'color-rg-insert-current-line)
+    (define-key map (kbd "I") #'color-rg-insert-current-line)
 
     (define-key map (kbd "SPC") #'color-rg-open-file)
     (define-key map (kbd "RET") #'color-rg-open-file-and-stay)
@@ -492,7 +492,7 @@ used to restore window configuration after file content changed.")
 
     (define-key map (kbd "D") #'color-rg-remove-line-from-results)
 
-    (define-key map (kbd "I") #'color-rg-rerun-toggle-ignore)
+    (define-key map (kbd "i") #'color-rg-rerun-toggle-ignore)
     (define-key map (kbd "N") #'color-rg-rerun-toggle-node)
     (define-key map (kbd "C") #'color-rg-rerun-toggle-case)
     (define-key map (kbd "L") #'color-rg-rerun-literal)
@@ -514,17 +514,17 @@ used to restore window configuration after file content changed.")
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-a") #'color-rg-beginning-of-line)
 
-    (define-key map (kbd "C-c C-j")        #'color-rg-jump-next-keyword)
-    (define-key map (kbd "C-c C-k")        #'color-rg-jump-prev-keyword)
+    (define-key map (kbd "C-c C-n")        #'color-rg-jump-next-keyword)
+    (define-key map (kbd "C-c C-p")        #'color-rg-jump-prev-keyword)
     (define-key map (kbd "C-c C-h")        #'color-rg-jump-next-file)
     (define-key map (kbd "C-c C-l")        #'color-rg-jump-prev-file)
     (define-key map (kbd "C-c <C-return>") #'color-rg-open-file)
     (define-key map (kbd "C-c C-v")        #'color-rg-switch-to-view-mode)
 
     (define-key map (kbd "C-c C-d") #'color-rg-delete-line)
-    (define-key map (kbd "C-c C-D") #'color-rg-delete-all-lines)
-    (define-key map (kbd "C-c C-r") #'color-rg-recover-line)
-    (define-key map (kbd "C-c C-R") #'color-rg-recover-buffer)
+    (define-key map (kbd "C-c C-x") #'color-rg-delete-all-lines)
+    (define-key map (kbd "C-c C-u") #'color-rg-recover-line)
+    (define-key map (kbd "C-c C-r") #'color-rg-recover-buffer)
     (define-key map (kbd "C-c C-q") #'color-rg-quit)
     (define-key map (kbd "C-c C-c") #'color-rg-apply-changed)
     map)
@@ -543,6 +543,7 @@ used to restore window configuration after file content changed.")
   (run-hooks 'color-rg-mode-hook)
   )
 
+;;;###autoload
 (defun color-rg-highlight-keywords ()
   "Highlight keywords."
   ;; Add keywords for highlight.
@@ -563,6 +564,7 @@ used to restore window configuration after file content changed.")
   ;; Enable font lock.
   (font-lock-mode 1))
 
+;;;###autoload
 (defun color-rg-filter ()
   "Handle match highlighting escape sequences inserted by the rg process.
 This function is called from `compilation-filter-hook'."
@@ -603,6 +605,7 @@ This function is called from `compilation-filter-hook'."
           (replace-match "" t t))))
     ))
 
+;;;###autoload
 (defun color-rg-process-setup ()
   "Setup compilation variables and buffer for `color-rg'."
   (set (make-local-variable 'compilation-exit-message-function)
@@ -636,25 +639,47 @@ This function is called from `compilation-filter-hook'."
                    (t (cons msg code)))
            (cons msg code)))))
 
+;;;###autoload
 (defun color-rg-update-header-line ()
-  (setq header-line-format (concat
-                            (propertize (format "%s mode" (color-rg-search-mode color-rg-cur-search)) 'font-lock-face 'color-rg-font-lock-match)
-                            (propertize (format " %s matches" color-rg-hit-count) 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize " [ " 'font-lock-face 'color-rg-font-lock-line-number)
-                            (propertize "Nav " 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize "j / k" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
-                            (propertize "  Replace " 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize "r" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
-                            (propertize "  Edit " 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize "e" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
-                            (propertize "  Filter files: " 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize "x / X / u" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
-                            (propertize "  Filter regex: " 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize "f / F" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
-                            (propertize "  Customize " 'font-lock-face 'color-rg-font-lock-header-line-text)
-                            (propertize "C" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
-                            (propertize " ]" 'font-lock-face 'color-rg-font-lock-line-number)
-                            )))
+  (setq header-line-format 
+    (if (string= (color-rg-search-mode color-rg-cur-search) "View")
+      (concat
+        (propertize (format "%s mode" (color-rg-search-mode color-rg-cur-search)) 'font-lock-face 'color-rg-font-lock-match)
+        (propertize (format " %s matches" color-rg-hit-count) 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize " [ " 'font-lock-face 'color-rg-font-lock-line-number)
+        (propertize " Nav " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "n / p" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Replace " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "r" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Edit " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "e" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Filter Files: " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "x / X / u" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Filter Regex: " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "f / F" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Ignore: " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "i" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize " Rerun " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "L(iteral) / R(egexp)" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize " ]" 'font-lock-face 'color-rg-font-lock-line-number))
+    (concat
+        (propertize (format "%s mode" (color-rg-search-mode color-rg-cur-search)) 'font-lock-face 'color-rg-font-lock-match)
+        (propertize (format " %s matches" color-rg-hit-count) 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize " [ " 'font-lock-face 'color-rg-font-lock-line-number)
+        (propertize " Begin with " 'font-lock-face 'color-rg-font-lock-line-number)
+        (propertize "C-c C- " 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "Nav " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "n / p / h / l" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  View " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "v" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Delete " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "d(line) / x(all)" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Recover " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "u(line) / r(all)" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize "  Apply " 'font-lock-face 'color-rg-font-lock-header-line-text)
+        (propertize "c" 'font-lock-face 'color-rg-font-lock-header-line-edit-mode)
+        (propertize " ]" 'font-lock-face 'color-rg-font-lock-line-number)))
+                          ))
 
 (cl-defstruct (color-rg-search (:constructor color-rg-search-create)
                                (:constructor color-rg-search-new (pattern dir))
@@ -686,6 +711,7 @@ Becomes buffer local in `color-rg-mode' buffers.")
   "Internal type aliases for special purposes.
 These are not produced by 'rg --type-list' but we need them anyway.")
 
+;;;###autoload
 (defun color-rg-get-custom-type-aliases ()
   "Get alist of custom type aliases.
 Any lambda elements will be evaluated, and nil results will be
@@ -694,6 +720,7 @@ filtered out."
              (lambda (ct) (if (functionp ct) (funcall ct) ct))
              color-rg-custom-type-aliases)))
 
+;;;###autoload
 (defun color-rg-list-builtin-type-aliases ()
   "Invokes rg --type-list and puts the result in an alist."
   (unless (executable-find "rg")
@@ -712,6 +739,7 @@ filtered out."
                          " "))))
      type-list)))
 
+;;;###autoload
 (defun color-rg-get-type-aliases (&optional skip-internal)
   "Return supported type aliases.
 If SKIP-INTERNAL is non nil the `color-rg-internal-type-aliases' will be
@@ -721,6 +749,7 @@ excluded."
   (append (color-rg-get-custom-type-aliases) color-rg-builtin-type-aliases
           (unless skip-internal color-rg-internal-type-aliases)))
 
+;;;###autoload
 (defun color-rg-is-custom-file-pattern (globs)
   "Return non nil if FILES is a custom file pattern."
   (not (assoc globs (color-rg-get-type-aliases))))
@@ -733,7 +762,7 @@ CASE-SENSITIVE determinies if search is case-sensitive."
   (let ((command-line
          (append
 
-          (list "--no-config --column --color=always -H")
+          (list "--column --color=always -H")
 
           ;; NOTE:                      ;
           ;;
@@ -779,6 +808,7 @@ CASE-SENSITIVE determinies if search is case-sensitive."
       (setq command-line (encode-coding-string command-line locale-coding-system)))
     command-line))
 
+;;;###autoload
 (defun color-rg-filter-tramp-path (path)
   "Remove sudo from PATH."
   (if (and (boundp 'tramp-tramp-file-p)
@@ -789,6 +819,7 @@ CASE-SENSITIVE determinies if search is case-sensitive."
           path))
     path))
 
+;;;###autoload
 (defun color-rg-search (keyword directory globs &optional literal no-ignore no-node case-sensitive file-exclude)
   (let ((command (color-rg-build-command keyword directory globs
                                          literal no-ignore no-node
@@ -847,6 +878,7 @@ CASE-SENSITIVE determinies if search is case-sensitive."
     (goto-char (point-min))
     ))
 
+;;;###autoload
 (defun color-rg-customized-search ()
   "Rerun rg with customized arguments. This function will give
 user more freedom to use rg with special arguments."
@@ -883,6 +915,7 @@ user more freedom to use rg with special arguments."
     (pop-to-buffer color-rg-buffer)
     (goto-char (point-min))))
 
+;;;###autoload
 (defun color-rg-read-input ()
   (let* ((current-symbol (color-rg-pointer-string))
          (input-string
@@ -896,6 +929,7 @@ user more freedom to use rg with special arguments."
       (setq input-string current-symbol))
     input-string))
 
+;;;###autoload
 (defun color-rg-current-parse-state ()
   "Return parse state of point from beginning of defun."
   (ignore-errors
@@ -904,6 +938,7 @@ user more freedom to use rg with special arguments."
         (beginning-of-defun)
         (parse-partial-sexp (point) point)))))
 
+;;;###autoload
 (defun color-rg-in-string-p (&optional state)
   (or (nth 3 (or state (color-rg-current-parse-state)))
       (and
@@ -914,6 +949,7 @@ user more freedom to use rg with special arguments."
        (eq (get-text-property (1- (point)) 'face) 'font-lock-doc-face))
       ))
 
+;;;###autoload
 (defun color-rg-string-start+end-points (&optional state)
   "Return a cons of the points of open and close quotes of the string.
 The string is determined from the parse state STATE, or the parse state
@@ -926,6 +962,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
       (forward-sexp 1)
       (cons start (1- (point))))))
 
+;;;###autoload
 (defun color-rg-pointer-string ()
   (if (use-region-p)
       ;; Get region string if mark is set.
@@ -949,20 +986,24 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
             (t current-symbol)))
     ))
 
+;;;###autoload
 (defun color-rg-find-next-position (regexp)
   (save-excursion
     (end-of-line)
     (search-forward-regexp regexp nil t)))
 
+;;;###autoload
 (defun color-rg-get-match-file ()
   (save-excursion
     (search-backward-regexp color-rg-regexp-file nil t)
     (string-remove-suffix "\n" (thing-at-point 'line))))
 
+;;;###autoload
 (defun color-rg-get-match-line ()
   (beginning-of-line)
   (string-to-number (thing-at-point 'symbol)))
 
+;;;###autoload
 (defun color-rg-get-match-column ()
   (search-forward ":")
   (string-to-number (thing-at-point 'symbol)))
@@ -974,11 +1015,13 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
         (throw 'find-match buffer)))
     nil))
 
+;;;###autoload
 (defun color-rg-current-line-empty-p ()
   (save-excursion
     (beginning-of-line)
     (looking-at "[[:space:]]*$")))
 
+;;;###autoload
 (defun color-rg-get-line-content (buffer line)
   (with-current-buffer buffer
     (save-excursion
@@ -991,6 +1034,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
       (buffer-substring start end))
     ))
 
+;;;###autoload
 (defun color-rg-get-row-column-position ()
   (let* ((search-bound
           (save-excursion
@@ -1002,6 +1046,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
             (search-forward-regexp color-rg-regexp-position search-bound t))))
     row-column-position))
 
+;;;###autoload
 (defun color-rg-after-change-function (beg end leng-before)
   ;; NOTE:
   ;; We should use `save-match-data' wrap function that hook in `after-change-functions'.
@@ -1024,6 +1069,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
           (color-rg-mark-position-changed change-line)))
       )))
 
+;;;###autoload
 (defun color-rg-mark-position-clear (line)
   (save-excursion
     (goto-line line)
@@ -1035,6 +1081,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
         (delete-overlay overlay)
         ))))
 
+;;;###autoload
 (defun color-rg-mark-position (line type face)
   (save-excursion
     (color-rg-mark-position-clear line)
@@ -1050,17 +1097,21 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
         (overlay-put changed-overlay 'face face)
         ))))
 
+;;;###autoload
 (defun color-rg-mark-position-changed (line)
   (color-rg-mark-position line "changed" 'color-rg-font-lock-mark-changed))
 
+;;;###autoload
 (defun color-rg-mark-position-deleted (line)
   (color-rg-mark-position line "deleted" 'color-rg-font-lock-mark-deleted))
 
+;;;###autoload
 (defun color-rg-kill-temp-buffer ()
   (when (get-buffer color-rg-temp-buffer)
     (kill-buffer color-rg-temp-buffer)
     (setq color-rg-changed-lines nil)))
 
+;;;###autoload
 (defun color-rg-clone-to-temp-buffer ()
   (color-rg-kill-temp-buffer)
   (with-current-buffer color-rg-buffer
@@ -1069,6 +1120,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
     (append-to-buffer color-rg-temp-buffer (point-min) (point-max))
     ))
 
+;;;###autoload
 (defun color-rg-switch-to-view-mode ()
   (interactive)
   (with-current-buffer color-rg-buffer
@@ -1086,6 +1138,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
     (color-rg-update-header-line)
     ))
 
+;;;###autoload
 (defun color-rg-filter-results (match-regexp)
   (let ((filter-regexp (read-string
                         (format (if match-regexp
@@ -1113,9 +1166,11 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
   ;; Update hit number in header line.
   (color-rg-update-header-line-hits))
 
+;;;###autoload
 (defun color-rg-file-extension (file)
   (string-join (cdr (split-string (file-name-nondirectory file) "\\.")) "."))
 
+;;;###autoload
 (defun color-rg-filter-files (match-files)
   (let (file-extensions start end)
     (save-excursion
@@ -1151,6 +1206,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
   ;; Update hit number in header line.
   (color-rg-update-header-line-hits))
 
+;;;###autoload
 (defun color-rg-remove-lines-under-file ()
   (let (start end)
     (save-excursion
@@ -1163,10 +1219,12 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
           (kill-region start end))
         (read-only-mode 1)))))
 
+;;;###autoload
 (defun color-rg-update-header-line-hits ()
   (setq color-rg-hit-count (color-rg-stat-hits))
   (color-rg-update-header-line))
 
+;;;###autoload
 (defun color-rg-stat-hits ()
   (let ((hit-count 0))
     (save-excursion
@@ -1182,6 +1240,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
           (goto-char next-change)))
       hit-count)))
 
+;;;###autoload
 (defun color-rg-read-file-type (format-string)
   (let* ((globs (color-rg-search-globs color-rg-cur-search))
          (default-files (if (and (color-rg-search-file-exclude color-rg-cur-search)
@@ -1195,6 +1254,8 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
      globs)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Interactive functions ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;###autoload
 (defun color-rg-search-input (&optional keyword directory globs)
   (interactive)
   ;; Save window configuration before do search.
@@ -1221,22 +1282,27 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
                      search-directory
                      search-globs)))
 
+;;;###autoload
 (defun color-rg-search-symbol ()
   (interactive)
   (color-rg-search-input (color-rg-pointer-string) default-directory))
 
+;;;###autoload
 (defun color-rg-search-symbol-with-type ()
   (interactive)
   (color-rg-search-input (color-rg-pointer-string) default-directory (color-rg-read-file-type "Filter file by type (default: [ %s ]): ")))
 
+;;;###autoload
 (defun color-rg-search-input-in-current-file ()
   (interactive)
   (color-rg-search-input (color-rg-read-input) (buffer-file-name)))
 
+;;;###autoload
 (defun color-rg-search-symbol-in-current-file ()
   (interactive)
   (color-rg-search-input (color-rg-pointer-string) (buffer-file-name)))
 
+;;;###autoload
 (defun color-rg-project-root-dir ()
   "Return root directory of the current project."
   (let ((project (project-current)))
@@ -1248,26 +1314,32 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
 
 (defalias 'color-rg-search-input-in-project 'color-rg-search-project)
 
+;;;###autoload
 (defun color-rg-search-project ()
   (interactive)
   (color-rg-search-input (color-rg-read-input) (color-rg-project-root-dir)))
 
+;;;###autoload
 (defun color-rg-search-symbol-in-project ()
   (interactive)
   (color-rg-search-input (color-rg-pointer-string) (color-rg-project-root-dir)))
 
+;;;###autoload
 (defun color-rg-search-project-with-type ()
   (interactive)
   (color-rg-search-input (color-rg-read-input) (color-rg-project-root-dir) (color-rg-read-file-type "Filter file by type (default: [ %s ]): ")))
 
+;;;###autoload
 (defun color-rg-search-project-rails ()
   (interactive)
   (color-rg-search-input (color-rg-read-input) (concat (color-rg-project-root-dir) "app")))
 
+;;;###autoload
 (defun color-rg-search-project-rails-with-type ()
   (interactive)
   (color-rg-search-input (color-rg-read-input) (concat (color-rg-project-root-dir) "app") (color-rg-read-file-type "Filter file by type (default: [ %s ]): ")))
 
+;;;###autoload
 (defun color-rg-replace-all-matches ()
   "Replace all matched results."
   (interactive)
@@ -1288,22 +1360,27 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
               (setf (color-rg-search-keyword color-rg-cur-search) replace-text)))))
       (message "Replace %s lines" changed-line-number))))
 
+;;;###autoload
 (defun color-rg-filter-match-results ()
   (interactive)
   (color-rg-filter-results t))
 
+;;;###autoload
 (defun color-rg-filter-mismatch-results ()
   (interactive)
   (color-rg-filter-results nil))
 
+;;;###autoload
 (defun color-rg-filter-match-files ()
   (interactive)
   (color-rg-filter-files t))
 
+;;;###autoload
 (defun color-rg-filter-mismatch-files ()
   (interactive)
   (color-rg-filter-files nil))
 
+;;;###autoload
 (defun color-rg-unfilter ()
   (interactive)
   (save-excursion
@@ -1321,6 +1398,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
       ;; Update hit number in header line.
       (color-rg-update-header-line-hits))))
 
+;;;###autoload
 (defun color-rg-remove-line-from-results ()
   (interactive)
   (save-excursion
@@ -1333,6 +1411,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
         (read-only-mode 1)
         ))))
 
+;;;###autoload
 (defun color-rg-recompile ()
   "Run `recompile' while preserving some buffer local variables."
   (interactive)
@@ -1344,6 +1423,7 @@ This assumes that `color-rg-in-string-p' has already returned true, i.e.
     (recompile)
     (setq color-rg-cur-search cur-search)))
 
+;;;###autoload
 (defun color-rg-rerun ()
   "Run `color-rg-recompile' with `compilation-arguments' taken
 from `color-rg-cur-search'."
@@ -1371,6 +1451,7 @@ from `color-rg-cur-search'."
     (goto-char (point-min))
     ))
 
+;;;###autoload
 (defun color-rg-rerun-regexp (&optional keyword)
   "Re-search as regexp."
   (interactive)
@@ -1380,6 +1461,7 @@ from `color-rg-cur-search'."
   (setf (color-rg-search-literal color-rg-cur-search) nil)
   (color-rg-rerun))
 
+;;;###autoload
 (defun color-rg-rerun-change-globs ()
   "Rerun last search but prompt for new files."
   (interactive)
@@ -1387,6 +1469,7 @@ from `color-rg-cur-search'."
   (setf (color-rg-search-globs color-rg-cur-search) (color-rg-read-file-type "Repeat search in files (default: [ %s ]): "))
   (color-rg-rerun))
 
+;;;###autoload
 (defun color-rg-rerun-change-exclude-files ()
   "Rerun last search but prompt for new files which will NOT be searched.
 This function is the opposite of `color-rg-rerun-change-globs'"
@@ -1395,6 +1478,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
   (setf (color-rg-search-globs color-rg-cur-search) (color-rg-read-file-type "Repeat search exclude files (default: [ %s ]): "))
   (color-rg-rerun))
 
+;;;###autoload
 (defun color-rg-rerun-in-parent-dir ()
   "Rerun last command in parent directory."
   (interactive)
@@ -1402,6 +1486,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
         (file-name-directory (directory-file-name (color-rg-search-dir color-rg-cur-search))))
   (color-rg-rerun))
 
+;;;###autoload
 (defun color-rg-rerun-in-project ()
   "Rerun last command in project root."
   (interactive)
@@ -1409,6 +1494,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
         (file-name-directory (color-rg-project-root-dir)))
   (color-rg-rerun))
 
+;;;###autoload
 (defun color-rg-rerun-change-dir ()
   "Rerun last command but prompt for new dir."
   (interactive)
@@ -1420,6 +1506,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           nil)))
   (color-rg-rerun))
 
+;;;###autoload
 (defun color-rg-rerun-literal (&optional nointeractive)
   "Re-search as literal."
   (interactive)
@@ -1433,6 +1520,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
                          (color-rg-search-keyword color-rg-cur-search)))
       (color-rg-rerun))))
 
+;;;###autoload
 (defun color-rg-rerun-toggle-case ()
   "Rerun last search with toggled case sensitivity setting."
   (interactive)
@@ -1442,6 +1530,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           case-sensitive)
     (color-rg-rerun)))
 
+;;;###autoload
 (defun color-rg-rerun-toggle-ignore ()
   "Rerun last search with toggled '--no-ignore' flag."
   (interactive)
@@ -1450,6 +1539,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           ignore)
     (color-rg-rerun)))
 
+;;;###autoload
 (defun color-rg-rerun-toggle-node ()
   "Rerun last search with toggled '--no-node' flag."
   (interactive)
@@ -1458,6 +1548,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           node)
     (color-rg-rerun)))
 
+;;;###autoload
 (defun isearch-toggle-color-rg ()
   "toggle `color-rg' in isearch-mode."
   (interactive)
@@ -1465,6 +1556,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
   (isearch-exit)
   )
 
+;;;###autoload
 (defun color-rg-jump-next-keyword ()
   (interactive)
   (let* ((next-position (color-rg-find-next-position color-rg-regexp-position)))
@@ -1474,6 +1566,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           (color-rg-open-file))
       (message "Reach to last line."))))
 
+;;;###autoload
 (defun color-rg-jump-prev-keyword ()
   (interactive)
   (let ((prev-match-pos
@@ -1496,6 +1589,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           (color-rg-open-file))
       (message "Reach to first line."))))
 
+;;;###autoload
 (defun color-rg-jump-next-file ()
   (interactive)
   (let*  ((next-position (color-rg-find-next-position color-rg-regexp-file)))
@@ -1506,6 +1600,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           (color-rg-open-file))
       (message "Reach to last file."))))
 
+;;;###autoload
 (defun color-rg-jump-prev-file ()
   (interactive)
   (let ((prev-match-pos
@@ -1534,6 +1629,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
           (color-rg-open-file))
       (message "Reach to first file."))))
 
+;;;###autoload
 (defun color-rg-insert-current-line ()
   (interactive)
   (let ((current-line (save-excursion
@@ -1547,6 +1643,7 @@ This function is the opposite of `color-rg-rerun-change-globs'"
     (color-rg-quit)
     (insert current-line)))
 
+;;;###autoload
 (defun color-rg-open-file (&optional stay)
   "Open file in other window.
 If STAY is non-nil, move cursor to the opened file."
@@ -1604,15 +1701,18 @@ If STAY is non-nil, move cursor to the opened file."
     (color-rg-move-to-column match-column)
     ))
 
+;;;###autoload
 (defun color-rg-back ()
   (interactive)
   (when color-rg-window-configuration-before-open
     (set-window-configuration color-rg-window-configuration-before-open)))
 
+;;;###autoload
 (defun color-rg-open-file-and-stay ()
   (interactive)
   (color-rg-open-file t))
 
+;;;###autoload
 (defun color-rg-flash-line ()
   (let ((pulse-iterations 1)
         (pulse-delay color-rg-flash-line-delay))
@@ -1629,14 +1729,17 @@ If STAY is non-nil, move cursor to the opened file."
                     'face 'color-rg-font-lock-function-location
                     )))))))
 
+;;;###autoload
 (defun color-rg-in-org-link-content-p ()
   (and (looking-back "\\[\\[.*" (line-beginning-position))
        (looking-at ".*\\]\\[")
        (looking-at ".*\\]\\]")))
 
+;;;###autoload
 (defun color-rg-is-org-file (file)
   (string-equal (color-rg-file-extension file) "org"))
 
+;;;###autoload
 (defun color-rg-move-to-point (line column)
   ;; Jump to match position.
   (goto-line line)
@@ -1649,6 +1752,7 @@ If STAY is non-nil, move cursor to the opened file."
   (save-excursion
     (scroll-down-line (min 5 (1- (window-body-height))))))
 
+;;;###autoload
 (defun color-rg-move-to-column (column)
   (beginning-of-line)
   (search-forward-regexp color-rg-regexp-position)
@@ -1657,6 +1761,7 @@ If STAY is non-nil, move cursor to the opened file."
   (unless (looking-at "[[:space:]]*$")
     (color-rg-jump-to-column column)))
 
+;;;###autoload
 (defun color-rg-jump-to-column (column)
   "This function use for jump to correct column positions in multi-byte strings.
 Such as, mixed string of Chinese and English.
@@ -1671,6 +1776,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
 
     (backward-char 1)))
 
+;;;###autoload
 (defun color-rg-switch-to-edit-mode ()
   (interactive)
   ;; Clone content to temp buffer.
@@ -1708,6 +1814,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
   ;; Message to user.
   (message "Switch to edit mode: press C-c C-c to apply change, press C-c C-q cancel edit"))
 
+;;;###autoload
 (defun color-rg-quit ()
   (interactive)
   ;; Kill temp buffer open by color-rg.
@@ -1724,6 +1831,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
     (setq color-rg-window-configuration-before-search nil)
     (setq color-rg-buffer-point-before-search nil)))
 
+;;;###autoload
 (defun color-rg-beginning-of-line ()
   (interactive)
   (let* ((row-column-position (color-rg-get-row-column-position)))
@@ -1731,6 +1839,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         (goto-char row-column-position)
       (move-beginning-of-line 1))))
 
+;;;###autoload
 (defun color-rg-delete-line ()
   (interactive)
   (let* ((row-column-position (color-rg-get-row-column-position)))
@@ -1741,6 +1850,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (kill-region start end)
       )))
 
+;;;###autoload
 (defun color-rg-delete-all-lines ()
   (interactive)
   (save-excursion
@@ -1749,11 +1859,13 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
       (while (search-forward-regexp color-rg-regexp-position nil t)
         (color-rg-delete-line)))))
 
+;;;###autoload
 (defun color-rg-recover-line ()
   (interactive)
   (color-rg-delete-line)
   (insert (color-rg-get-line-content color-rg-temp-buffer (line-number-at-pos))))
 
+;;;###autoload
 (defun color-rg-recover-buffer ()
   (interactive)
   (save-excursion
@@ -1769,6 +1881,7 @@ Function `move-to-column' can't handle mixed string of Chinese and English corre
         (color-rg-switch-to-edit-mode)
         ))))
 
+;;;###autoload
 (defun color-rg-apply-changed ()
   (interactive)
   (if (equal (length color-rg-changed-lines) 0)
